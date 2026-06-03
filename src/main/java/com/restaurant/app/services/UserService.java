@@ -24,6 +24,7 @@ public class UserService {
             admin.setPassword("1234");
             admin.setActive(true);
             admin.setNombre("Administrador");
+            admin.setRol("ADMINISTRADOR");
             userRepository.save(admin);
         }
     }
@@ -47,13 +48,8 @@ public class UserService {
     }
 
     public Usuario createUser(String username, String password, String rol, String celular, String direccion) {
-        Usuario newUser;
-        switch (rol) {
-            case "CLIENTE":    newUser = new Cliente();    break;
-            case "COCINERO":   newUser = new Cocinero();   break;
-            case "MESERO":     newUser = new Mesero();     break;
-            default:           throw new IllegalArgumentException("Rol no válido");
-        }
+        Usuario newUser = new Cliente();
+        
         newUser.setUsername(username);
         newUser.setPassword(password);
         newUser.setCelular(celular);
@@ -72,6 +68,7 @@ public class UserService {
         userRepository.findById(id).ifPresent(user -> {
 
         user.setUsername(username);
+        user.setRol(role);
         user.setCelular(celular);
         user.setDireccion(direccion);
 
