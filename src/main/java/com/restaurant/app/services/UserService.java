@@ -46,7 +46,7 @@ public class UserService {
         return userRepository.findAll();
     }
 
-    public Usuario createUser(String username, String password, String rol) {
+    public Usuario createUser(String username, String password, String rol, String celular, String direccion) {
         Usuario newUser;
         switch (rol) {
             case "CLIENTE":    newUser = new Cliente();    break;
@@ -56,16 +56,28 @@ public class UserService {
         }
         newUser.setUsername(username);
         newUser.setPassword(password);
+        newUser.setCelular(celular);
+        newUser.setDireccion(direccion);
         newUser.setActive(true);
         return userRepository.save(newUser);
     }
 
-    public void updateUsername(@NonNull Long id, String newUsername) {
-        userRepository.findById(id).ifPresent(u -> {
-            u.setUsername(newUsername);
-            userRepository.save(u);
-        });
-    }
+    public void updateUser(@NonNull Long id,
+                       String username,
+                       String role,
+                       String celular,
+                       String direccion) 
+    {
+
+        userRepository.findById(id).ifPresent(user -> {
+
+        user.setUsername(username);
+        user.setCelular(celular);
+        user.setDireccion(direccion);
+
+        userRepository.save(user);
+    });
+}
 
     public void deleteUser(@NonNull Long id) {
         userRepository.deleteById(id);

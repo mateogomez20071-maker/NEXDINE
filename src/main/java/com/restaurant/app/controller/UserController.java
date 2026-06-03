@@ -64,25 +64,37 @@ public class UserController {
     public String createUser(@RequestParam String username,
                              @RequestParam String password,
                              @RequestParam String role,
+                             @RequestParam String celular,
+                             @RequestParam String direccion,
                              HttpSession session) {
         Usuario currentUser = (Usuario) session.getAttribute("currentUser");
         if (currentUser == null) return "redirect:/login";
         if (!"ADMINISTRADOR".equals(currentUser.getRol())) return "redirect:/dashboard";
         if ("ADMINISTRADOR".equals(role)) return "redirect:/users";
 
-        userService.createUser(username, password, role);
+        userService.createUser(username, password, role, celular, direccion);
         return "redirect:/users";
     }
 
     @PostMapping("/users/edit")
     public String editUser(@RequestParam @NonNull Long id,
                            @RequestParam String username,
+                           @RequestParam String role,
+                           @RequestParam String celular,
+                           @RequestParam String direccion,
                            HttpSession session) {
         Usuario currentUser = (Usuario) session.getAttribute("currentUser");
         if (currentUser == null) return "redirect:/login";
         if (!"ADMINISTRADOR".equals(currentUser.getRol())) return "redirect:/dashboard";
 
-        userService.updateUsername(id, username);
+        userService.updateUser
+        (
+            id,
+            username,
+            role,
+            celular,
+            direccion
+        );
         return "redirect:/users";
     }
 
