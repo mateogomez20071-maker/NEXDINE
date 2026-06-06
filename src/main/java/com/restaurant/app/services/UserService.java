@@ -49,9 +49,18 @@ public class UserService {
 
     public Usuario createUser(String username, String password, String rol, String celular, String direccion) {
         Usuario newUser = new Cliente();
-        
+
+        if (!celular.matches("[0-9]+")) 
+            {
+                throw new IllegalArgumentException
+                (
+                    "El teléfono solo puede contener números"
+                );
+            }
+            
         newUser.setUsername(username);
         newUser.setPassword(password);
+        newUser.setRol(rol);
         newUser.setCelular(celular);
         newUser.setDireccion(direccion);
         newUser.setActive(true);
