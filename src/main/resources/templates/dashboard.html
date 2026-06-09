@@ -16,7 +16,7 @@
         
         .nav-link { color: rgba(255,255,255,0.8); padding: 12px 20px; border-radius: 0; transition: all 0.3s; display: flex; align-items: center; gap: 12px;}
         .nav-link:hover { background-color: rgba(255,255,255,0.1); color: white; }
-        .nav-link.active { background-color: var(--accent-color); border-left: 4px solid #fff; color: white; font-weight: 600;}
+        .nav-link.estado { background-color: var(--accent-color); border-left: 4px solid #fff; color: white; font-weight: 600;}
         
         .main-content { margin-left: 260px; flex: 1; padding: 30px; }
         
@@ -47,10 +47,10 @@
     
     <ul class="nav flex-column mt-3">
         <li th:if="${currentUser.rol != 'CLIENTE'}" class="nav-item">
-            <a href="#" class="nav-link active"><i class="fa-solid fa-users"></i> Usuarios</a>
+            <a href="#" class="nav-link estado"><i class="fa-solid fa-users"></i> Usuarios</a>
         </li>
         <li th:if="${currentUser.rol == 'CLIENTE'}" class="nav-item">
-            <a href="/menu" class="nav-link active"><i class="fa-solid fa-utensils"></i> Ver Menú</a>
+            <a href="/menu" class="nav-link estado"><i class="fa-solid fa-utensils"></i> Ver Menú</a>
         </li>
         <li th:if="${currentUser.rol != 'CLIENTE'}" class="nav-item">
             <a href="#" class="nav-link"><i class="fa-solid fa-receipt"></i> Pedidos</a>
@@ -72,8 +72,8 @@
         <h2 th:text="${currentUser.rol == 'CLIENTE' ? 'Menú del Restaurante' : 'Gestión de Usuarios'}"></h2>
         
         <div style="display: flex; align-items: center; gap: 15px;">
-            <span class="text-muted">Hola, <strong th:text="${currentUser.username}"></strong></span>
-            <img th:src="'https://ui-avatars.com/api/?name=' + ${currentUser.username} + '&background=1a3c34&color=fff'" class="rounded-circle" width="40" height="40">
+            <span class="text-muted">Hola, <strong th:text="${currentUser.nombre}"></strong></span>
+            <img th:src="'https://ui-avatars.com/api/?name=' + ${currentUser.nombre} + '&background=1a3c34&color=fff'" class="rounded-circle" width="40" height="40">
         </div>
     </div>
 
@@ -100,15 +100,15 @@
                 <div class="row g-2 align-items-end">
                     <div class="col-md-4">
                         <label class="form-label small fw-semibold">Nombre de usuario</label>
-                        <input type="text" name="username" class="form-control form-control-sm" placeholder="Ej: maria123" required>
+                        <input type="text" name="nombre" class="form-control form-control-sm" placeholder="Ej: maria123" required>
                     </div>
                     <div class="col-md-3">
                         <label class="form-label small fw-semibold">Contraseña</label>
-                        <input type="password" name="password" class="form-control form-control-sm" placeholder="Contraseña" required>
+                        <input type="password" name="contraseña" class="form-control form-control-sm" placeholder="Contraseña" required>
                     </div>
                     <div class="col-md-3">
                         <label class="form-label small fw-semibold">Rol</label>
-                        <select name="role" class="form-select form-select-sm">
+                        <select name="rol" class="form-select form-select-sm">
                             <option value="COCINERO">Cocinero</option>
                             <option value="MESERO">Mesero</option>
                             <option value="CLIENTE">Cliente</option>
@@ -175,7 +175,7 @@
             </h5>
 
             <p><strong>ID:</strong> <span th:text="${searchedUser.id}"></span></p>
-            <p><strong>Usuario:</strong> <span th:text="${searchedUser.username}"></span></p>
+            <p><strong>nombre:</strong> <span th:text="${searchedUser.nombre}"></span></p>
             <p><strong>Rol:</strong> <span th:text="${searchedUser.rol}"></span></p>
         </div>
 
@@ -185,7 +185,7 @@
                 <thead class="text-muted">
                     <tr>
                         <th>ID</th>
-                        <th>Usuario</th>
+                        <th>Nombre</th>
                         <th>Rol</th>
                         <th>Teléfono</th>
                         <th>Dirección</th>
@@ -198,7 +198,7 @@
                 <tbody>
                     <tr th:each="user : ${users}">
                         <td><span class="id-badge">#<span th:text="${user.id}"></span></span></td>
-                        <td><strong th:text="${user.username}"></strong></td>
+                        <td><strong th:text="${user.nombre}"></strong></td>
                         <td>
                             <span th:if="${user.rol == 'ADMINISTRADOR'}" class="role-label role-admin">
                                 <i class="fa-solid fa-shield-halved me-1"></i>Administrador
@@ -218,11 +218,16 @@
                         <td th:text="${user.celular}"></td>
                         <td th:text="${user.direccion}"></td>
                         <td>
-                            <span th:if="${user.active}" class="badge bg-success-subtle text-success border border-success-subtle">
-                                <i class="fa-solid fa-circle-check me-1"></i>Activo
+                            <span th:if="${user.isEstado()}"
+                                class="badge bg-success-subtle text-success border border-success-subtle">
+                                <i class="fa-solid fa-circle-check me-1"></i>
+                                Activo
                             </span>
-                            <span th:unless="${user.active}" class="badge bg-danger-subtle text-danger border border-danger-subtle">
-                                <i class="fa-solid fa-ban me-1"></i>Suspendido
+
+                            <span th:unless="${user.isEstado()}"
+                                class="badge bg-danger-subtle text-danger border border-danger-subtle">
+                                <i class="fa-solid fa-ban me-1"></i>
+                                Suspendido
                             </span>
                         </td>
                         
@@ -231,17 +236,21 @@
                             <!-- Toggle activo/inactivo -->
                             <form th:action="@{/users/toggle}" method="post" style="display:inline;">
                                 <input type="hidden" name="id" th:value="${user.id}">
-                                <button type="submit" 
-                                        th:class="${user.active ? 'btn btn-sm btn-outline-warning' : 'btn btn-sm btn-outline-success'}"
-                                        th:title="${user.active ? 'Suspender usuario' : 'Activar usuario'}">
-                                    <i th:class="${user.active ? 'fa-solid fa-ban' : 'fa-solid fa-circle-check'}"></i>
+                                <button type="submit"
+                                        class="btn btn-sm"
+                                        th:classappend="${user.estado} ? ' btn-outline-warning' : ' btn-outline-success'"
+                                        th:title="${user.estado} ? 'Suspender usuario' : 'Activar usuario'">
+                                        
+                                    <i th:if="${user.estado}" class="fa-solid fa-ban"></i>
+                                    <i th:unless="${user.estado}" class="fa-solid fa-circle-check"></i>
+
                                 </button>
                             </form>
                             
                             <!-- Botón Editar - abre modal -->
                             <button class="btn btn-sm btn-outline-primary ms-1"
                                     th:data-id="${user.id}"
-                                    th:data-username="${user.username}"
+                                    th:data-nombre="${user.nombre}"
                                     onclick="openEditModal(this)"
                                     title="Editar usuario">
                                 <i class="fa-solid fa-pen"></i>
@@ -277,10 +286,10 @@
                     <input type="hidden" name="id" id="editUserId">
                     <div class="mb-3">
                         <label class="form-label fw-semibold">Nuevo nombre de usuario</label>
-                        <input type="text" name="username" id="editUsername" class="form-control" required>
+                        <input type="text" name="nombre" id="editnombre" class="form-control" required>
                         <label>Rol</label>
                         <select id="editRole"
-                                name="role"
+                                name="rol"
                                 class="form-control mb-3">
                             <option value="CLIENTE">Cliente</option>
                             <option value="MESERO">Mesero</option>
@@ -313,7 +322,7 @@
 <script>
     function openEditModal(btn) {
         document.getElementById('editUserId').value = btn.getAttribute('data-id');
-        document.getElementById('editUsername').value = btn.getAttribute('data-username');
+        document.getElementById('editnombre').value = btn.getAttribute('data-nombre');
         new bootstrap.Modal(document.getElementById('editModal')).show();
     }
 </script>

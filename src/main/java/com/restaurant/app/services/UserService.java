@@ -5,104 +5,140 @@ import com.restaurant.app.repository.UserRepository;
 
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
+
 import java.util.List;
 import java.util.Optional;
 
 @Service
 public class UserService {
 
-    private final UserRepository userRepository;
+private final UserRepository userRepository;
 
-    public UserService(UserRepository userRepository) {
-        this.userRepository = userRepository;
+public UserService(UserRepository userRepository) {
+    this.userRepository = userRepository;
+}
+
+public void initAdmin() {
+
+    if (!userRepository.findByNombre("jesus").isPresent()) {
+
+        Administrador admin = new Administrador();
+
+        admin.setNombre("jesus");
+        admin.setContraseña("1234");
+        admin.setRol("ADMINISTRADOR");
+        admin.setEstado(true);
+        userRepository.save(admin);
     }
+}
 
-    public void initAdmin() {
-        if (!userRepository.findByUsername("jesus").isPresent()) {
-            Administrador admin = new Administrador();
-            admin.setUsername("jesus");
-            admin.setPassword("1234");
-            admin.setActive(true);
-            admin.setNombre("Administrador");
-            admin.setRol("ADMINISTRADOR");
-            userRepository.save(admin);
+public Optional<Usuario> login(String nombre,
+                               String contraseña) {
+
+    Optional<Usuario> usuarioOpt =
+            userRepository.findByNombre(nombre);
+
+    if (usuarioOpt.isPresent()) {
+
+        Usuario usuario = usuarioOpt.get();
+
+        if (usuario.getContraseña().equals(contraseña)) {
+
+            if (!usuario.isEstado()) {
+                return Optional.of(new SuspendedMarker());
+            }
+
+            return Optional.of(usuario);
         }
     }
 
-    public Optional<Usuario> login(String username, String password) {
-        Optional<Usuario> userOpt = userRepository.findByUsername(username);
-        if (userOpt.isPresent()) {
-            Usuario u = userOpt.get();
-            if (u.getPassword().equals(password)) {
-                if (!u.isActive()) {
-                    return Optional.of(new SuspendedMarker());
-                }
-                return Optional.of(u);
-            }
-        }
-        return Optional.empty();
+    return Optional.empty();
+}
+
+public List<Usuario> getAllUsers() {
+    return userRepository.findAll();
+}
+
+public Usuario createUser(String nombre,
+                          String contraseña,
+                          String rol,
+                          String celular,
+                          String direccion) {
+
+    Usuario nuevoUsuario;
+
+    switch (rol) {
+
+        case "CLIENTE":
+            nuevoUsuario = new Cliente();
+            break;
+
+        case "COCINERO":
+            nuevoUsuario = new Cocinero();
+            break;
+
+        case "MESERO":
+            nuevoUsuario = new Mesero();
+            break;
+
+        default:
+            nuevoUsuario = new Empleado();
+            break;
     }
 
-    public List<Usuario> getAllUsers() {
-        return userRepository.findAll();
-    }
+    nuevoUsuario.setNombre(nombre);
+    nuevoUsuario.setContraseña(contraseña);
+    nuevoUsuario.setRol(rol);
+    nuevoUsuario.setCelular(celular);
+    nuevoUsuario.setDireccion(direccion);
+    nuevoUsuario.setEstado(true);
 
-    public Usuario createUser(String username, String password, String rol, String celular, String direccion) {
-        Usuario newUser = new Cliente();
+    return userRepository.save(nuevoUsuario);
+}
 
-        if (!celular.matches("[0-9]+")) 
-            {
-                throw new IllegalArgumentException
-                (
-                    "El teléfono solo puede contener números"
-                );
-            }
-            
-        newUser.setUsername(username);
-        newUser.setPassword(password);
-        newUser.setRol(rol);
-        newUser.setCelular(celular);
-        newUser.setDireccion(direccion);
-        newUser.setActive(true);
-        return userRepository.save(newUser);
-    }
-
-    public void updateUser(@NonNull Long id,
-                       String username,
-                       String role,
+public void updateUser(@NonNull Long id,
+                       String nombre,
+                       String rol,
                        String celular,
-                       String direccion) 
-    {
+                       String direccion) {
 
-        userRepository.findById(id).ifPresent(user -> {
+    userRepository.findById(id).ifPresent(user -> {
 
-        user.setUsername(username);
-        user.setRol(role);
+        user.setNombre(nombre);
         user.setCelular(celular);
+        user.setRol(rol);
         user.setDireccion(direccion);
 
         userRepository.save(user);
     });
 }
 
-    public void deleteUser(@NonNull Long id) {
-        userRepository.deleteById(id);
-    }
+public void deleteUser(@NonNull Long id) {
 
-    public void toggleUserStatus(@NonNull Long id) {
-        userRepository.findById(id).ifPresent(u -> {
-            u.setActive(!u.isActive());
-            userRepository.save(u);
-        });
-    }
+    userRepository.deleteById(id);
+}
 
-    // Marcador para usuario suspendido
-    public static class SuspendedMarker extends Cliente {
-        public SuspendedMarker() { super(); }
-    }
+public void toggleUserStatus(@NonNull Long id) {
 
-    public Optional<Usuario> getUserById(@NonNull Long id) 
-    {
-        return userRepository.findById(id);
+    userRepository.findById(id).ifPresent(usuario -> {
+
+        usuario.setEstado(!usuario.isEstado());
+
+        userRepository.save(usuario);
+    });
+}
+
+public Optional<Usuario> getUserById(@NonNull Long id) {
+
+    return userRepository.findById(id);
+}
+
+public static class SuspendedMarker extends Cliente {
+
+    public SuspendedMarker() {
+        super();
     }
+}
+
+
 }

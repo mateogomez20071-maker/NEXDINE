@@ -17,104 +17,158 @@ public class UserController {
     private UserService userService;
 
     @GetMapping("/dashboard")
-    public String showDashboard(HttpSession session, Model model) {
-        Usuario currentUser = (Usuario) session.getAttribute("currentUser");
-        if (currentUser == null) return "redirect:/login";
+    public String mostrarPanel(HttpSession session, Model model) {
 
-        List<Usuario> users = userService.getAllUsers();
-        model.addAttribute("currentUser", currentUser);
-        model.addAttribute("users", users);
+        Usuario usuarioActual =
+                (Usuario) session.getAttribute("currentUser");
+
+        if (usuarioActual == null)
+            return "redirect:/login";
+
+        List<Usuario> usuarios =
+                userService.getAllUsers();
+
+        model.addAttribute("currentUser", usuarioActual);
+        model.addAttribute("users", usuarios);
+
         return "dashboard";
     }
 
     @GetMapping("/users")
-    public String listUsers(HttpSession session, Model model) {
-        Usuario currentUser = (Usuario) session.getAttribute("currentUser");
-        if (currentUser == null) return "redirect:/login";
-        if ("CLIENTE".equals(currentUser.getRol())) return "redirect:/dashboard";
+    public String verUsuarios(HttpSession session, Model model) {
 
-        List<Usuario> users = userService.getAllUsers();
-        model.addAttribute("users", users);
-        model.addAttribute("currentUser", currentUser);
+        Usuario usuarioActual =
+                (Usuario) session.getAttribute("currentUser");
+
+        if (usuarioActual == null)
+            return "redirect:/login";
+
+        if ("CLIENTE".equals(usuarioActual.getRol()))
+            return "redirect:/dashboard";
+
+        List<Usuario> usuarios =
+                userService.getAllUsers();
+
+        model.addAttribute("users", usuarios);
+        model.addAttribute("currentUser", usuarioActual);
+
         return "dashboard";
     }
 
     @GetMapping("/users/search")
-    public String searchUser(@RequestParam @NonNull Long id,
-                            HttpSession session,
-                            Model model) {
+    public String consultarUsuario(@RequestParam @NonNull Long id,
+                                   HttpSession session,
+                                   Model model) {
 
-        Usuario currentUser = (Usuario) session.getAttribute("currentUser");
+        Usuario usuarioActual =
+                (Usuario) session.getAttribute("currentUser");
 
-        if (currentUser == null) {
+        if (usuarioActual == null)
             return "redirect:/login";
-        }
 
-        userService.getUserById(id).ifPresent(user -> {
-            model.addAttribute("searchedUser", user);
-        });
+        userService.getUserById(id)
+                .ifPresent(usuario ->
+                        model.addAttribute("searchedUser", usuario));
 
-        model.addAttribute("currentUser", currentUser);
-        model.addAttribute("users", userService.getAllUsers());
+        model.addAttribute("currentUser", usuarioActual);
+        model.addAttribute("users",
+                userService.getAllUsers());
 
         return "dashboard";
     }
 
     @PostMapping("/users/create")
-    public String createUser(@RequestParam String username,
-                             @RequestParam String password,
-                             @RequestParam String role,
-                             @RequestParam String celular,
-                             @RequestParam String direccion,
-                             HttpSession session) {
-        Usuario currentUser = (Usuario) session.getAttribute("currentUser");
-        if (currentUser == null) return "redirect:/login";
-        if (!"ADMINISTRADOR".equals(currentUser.getRol())) return "redirect:/dashboard";
-        if ("ADMINISTRADOR".equals(role)) return "redirect:/users";
+    public String agregarUsuario(@RequestParam String nombre,
+                                 @RequestParam String contraseña,
+                                 @RequestParam String rol,
+                                 @RequestParam String celular,
+                                 @RequestParam String direccion,
+                                 HttpSession session) {
 
-        userService.createUser(username, password, role, celular, direccion);
+        Usuario usuarioActual =
+                (Usuario) session.getAttribute("currentUser");
+
+        if (usuarioActual == null)
+            return "redirect:/login";
+
+        if (!"ADMINISTRADOR".equals(usuarioActual.getRol()))
+            return "redirect:/dashboard";
+
+        if ("ADMINISTRADOR".equals(rol))
+            return "redirect:/users";
+
+        userService.createUser(
+                nombre,
+                contraseña,
+                rol,
+                celular,
+                direccion
+        );
+
         return "redirect:/users";
     }
 
     @PostMapping("/users/edit")
-    public String editUser(@RequestParam @NonNull Long id,
-                           @RequestParam String username,
-                           @RequestParam String role,
-                           @RequestParam String celular,
-                           @RequestParam String direccion,
-                           HttpSession session) {
-        Usuario currentUser = (Usuario) session.getAttribute("currentUser");
-        if (currentUser == null) return "redirect:/login";
-        if (!"ADMINISTRADOR".equals(currentUser.getRol())) return "redirect:/dashboard";
+    public String editarUsuario(@RequestParam @NonNull Long id,
+                                @RequestParam String nombre,
+                                @RequestParam String rol,
+                                @RequestParam String celular,
+                                @RequestParam String direccion,
+                                HttpSession session) {
 
-        userService.updateUser
-        (
-            id,
-            username,
-            role,
-            celular,
-            direccion
+        Usuario usuarioActual =
+                (Usuario) session.getAttribute("currentUser");
+
+        if (usuarioActual == null)
+            return "redirect:/login";
+
+        if (!"ADMINISTRADOR".equals(usuarioActual.getRol()))
+            return "redirect:/dashboard";
+
+        userService.updateUser(
+                id,
+                nombre,
+                rol,
+                celular,
+                direccion
         );
+
         return "redirect:/users";
     }
 
     @PostMapping("/users/delete")
-    public String deleteUser(@RequestParam @NonNull Long id, HttpSession session) {
-        Usuario currentUser = (Usuario) session.getAttribute("currentUser");
-        if (currentUser == null) return "redirect:/login";
-        if (!"ADMINISTRADOR".equals(currentUser.getRol())) return "redirect:/dashboard";
+    public String eliminarUsuario(@RequestParam @NonNull Long id,
+                                  HttpSession session) {
+
+        Usuario usuarioActual =
+                (Usuario) session.getAttribute("currentUser");
+
+        if (usuarioActual == null)
+            return "redirect:/login";
+
+        if (!"ADMINISTRADOR".equals(usuarioActual.getRol()))
+            return "redirect:/dashboard";
 
         userService.deleteUser(id);
+
         return "redirect:/users";
     }
 
     @PostMapping("/users/toggle")
-    public String toggleStatus(@RequestParam @NonNull Long id, HttpSession session) {
-        Usuario currentUser = (Usuario) session.getAttribute("currentUser");
-        if (currentUser == null) return "redirect:/login";
-        if (!"ADMINISTRADOR".equals(currentUser.getRol())) return "redirect:/dashboard";
+    public String verificarUsuario(@RequestParam @NonNull Long id,
+                                   HttpSession session) {
+
+        Usuario usuarioActual =
+                (Usuario) session.getAttribute("currentUser");
+
+        if (usuarioActual == null)
+            return "redirect:/login";
+
+        if (!"ADMINISTRADOR".equals(usuarioActual.getRol()))
+            return "redirect:/dashboard";
 
         userService.toggleUserStatus(id);
+
         return "redirect:/users";
     }
 }

@@ -8,6 +8,7 @@ import lombok.Data;
 @Inheritance(strategy = InheritanceType.JOINED)
 @Data
 public abstract class Usuario {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -18,17 +19,14 @@ public abstract class Usuario {
     private String direccion;
     private String rol;
 
-    @Column(unique = true)
-    private String username;
+    private String contraseña;
 
-    private String password;
-
-    private boolean active = true;
-
+    private boolean estado = true;
     
-
     public void iniciarSesion() {}
     public void cerrarSesion() {}
     public void editarPerfil() {}
     public void recibirNotificacion() {}
+
+    
 }
